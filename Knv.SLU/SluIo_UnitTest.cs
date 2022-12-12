@@ -9,25 +9,56 @@ namespace Knv.SLU
     using System.Threading.Tasks;
     using BitwiseSystems;
     using NUnit.Framework;
+    using System.Diagnostics;
+    using System.Reflection;
+
 
     [TestFixture]
     internal class SluIo_UnitTes
     {
-
         string LOG_ROOT_DIR = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
         [Test]
         public void Slu0AttachCheck()
         {
-            var devname = SluIo.GetAttachedNameOfRacks();
+            var devname = SluIo.GetAttachedNameOfUnits();
             Assert.IsTrue(devname.Contains("QUSB-0"));
         }
 
         [Test]
         public void SluCount()
         {
-            var devname = SluIo.GetAttachedNameOfRacks();
+            var devname = SluIo.GetAttachedNameOfUnits();
             Assert.IsTrue(devname.Contains("QUSB-0"));
+        }
+
+
+        [Test]
+        public void SluVenturiCardsPresent()
+        {
+            var cards = new List<string>();
+            using (var slu = new SluIo())
+            {
+                slu.Open();
+                {
+                    int row = 0;
+                    for (int unit = 0; unit < 2; unit++)
+                    {
+                        for (int slot = 1; slot <= 21; slot++)
+                        {
+                            row++;
+                            var type = slu.ReadRegister((byte)unit, (byte)slot, 0);
+                            string name = "";
+                            slu.CardTypes.TryGetValue(type, out name);
+                            cards.Add($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} ");
+                        }
+                    }
+                }
+
+                slu.LogSave(LOG_ROOT_DIR, MethodBase.GetCurrentMethod().Name);
+            }
+            foreach (var card in cards)
+                TestContext.Out.WriteLine(card);
         }
 
         [Test]

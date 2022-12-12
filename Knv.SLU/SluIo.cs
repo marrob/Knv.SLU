@@ -9,6 +9,7 @@ namespace Knv.SLU
     using System.Runtime.InteropServices;
     //C:\Program Files (x86)\Bitwise Systems\QuickUsb\Library\Assembly
     using BitwiseSystems;
+    using Common;
 
     public class SluIo : IDisposable
     {
@@ -40,16 +41,33 @@ namespace Knv.SLU
 
         public void Open()
         {
-            /* Todo mi van akkor ha az QUSB-1 az 0-ás indexere kerül és nem az egyysre??? */
 
             var devnames = QuickUsb.FindModules();//QUSB-0, QUSB-1...
             Array.Sort(devnames, StringComparer.CurrentCultureIgnoreCase);
-            for (int i = 0; i < devnames.Length; i++)
+            for (int unit = 0; unit < devnames.Length; unit++)
             {
-                var devname = devnames[i];
-                var qusb = new QuickUsb();
-                _quickUsbs.Add(qusb);
-                qusb.Open(devname);
+                var devname = devnames[unit];
+                try
+                {
+                    var qusb = new QuickUsb();
+                    _quickUsbs.Add(qusb);
+
+                    if (qusb.Open(devname))
+                    {
+                        LogWriteLine($"SluIo.Open {devname} successful.");
+                    }
+                    else
+                    {
+                        LogWriteLine($"SluIo.Open {devname} failed.");
+                    }
+
+                    var x = ReadRegister((byte)unit, 0, 0);
+                }
+                catch (Exception ex)
+                {
+                    LogWriteLine($"SluIo.Open Error {devname} {ex.Message}.");
+                    throw ex;
+                }
             }
         }
            
@@ -58,7 +76,7 @@ namespace Knv.SLU
         /// 
         /// </summary>
         /// <returns></returns>
-        public static List<string> GetAttachedNameOfRacks()
+        public static List<string> GetAttachedNameOfUnits()
         {
             var nameOfRackes = QuickUsb.FindModules().ToList<string>();
             return nameOfRackes;       
@@ -95,8 +113,10 @@ namespace Knv.SLU
              */
 
             var bytes2write = new byte[] { 0x0A, (byte)((unit << 5)| slot), register, data, 0xFF, 0xFF, 0xFF, 0xFF };
+            LogWriteLine($"WrReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint length = (uint)bytes2write.Length;
             _quickUsbs[unit].WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
+
         }
 
 
@@ -107,19 +127,26 @@ namespace Knv.SLU
              * 
              * SLU1 Slot21 Register:0
              * 0B 35 00 FF FF FF FF FF
-             * FF 00 00 43 43 43 43 43
+             * FF 00 00 43 43 43 43 43\
+             * 
+             * Szia Robi! Mizu? kutyagumi
+             * Ne légy troll!!!!!!!!!!!!!!!!!!
              * 
              */
 
             var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint wrlength = (uint)bytes2write.Length;
             _quickUsbs[unit].WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
 
+            System.Threading.Thread.Sleep(10);
+
+            _quickUsbs[unit].WriteCommand(0x08, new byte[] { }, 0);
 
             byte[] readBytes = new byte[8];
             uint rdLength = (uint)readBytes.Length;
             _quickUsbs[unit].ReadData(readBytes, ref rdLength);
-
+            LogWriteLine($"RdReg Rx: {Tools.ConvertByteArrayToLogString(readBytes)}");
             retval = readBytes[3];
             return retval;
         }
@@ -134,7 +161,7 @@ namespace Knv.SLU
         public void LogWriteLine(string line)
         {
             var dt = DateTime.Now;
-            _logLines.Add($"{dt:yyyy}.{dt:MM}.{dt:dd} {dt:HH}:{dt:mm}:{dt:ss} {line}");
+            _logLines.Add($"{dt:yyyy}.{dt:MM}.{dt:dd} {dt:HH}:{dt:mm}:{dt:ss}:{dt:fff} {line}");
         }
 
         public void LogSave(string directory)
@@ -160,7 +187,7 @@ namespace Knv.SLU
 
         private void Dispose(bool disposing)
         {
-            LogWriteLine($"SluExplorer.{nameof(Dispose)}.Begin");
+            LogWriteLine($"SluIo.{nameof(Dispose)}.Begin");
             if (_disposed)
                 return;
 
@@ -178,7 +205,7 @@ namespace Knv.SLU
                 }
             }
             _disposed = true;
-            LogWriteLine($"SluExplorer.{nameof(Dispose)}.End");
+            LogWriteLine($"SluIo.{nameof(Dispose)}.End");
         }
     }
 }

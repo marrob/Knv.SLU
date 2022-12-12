@@ -5,18 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using BitwiseSystems;
 using System.Threading;
-
+using System.Reflection;
 
 namespace Knv.SLU
 {
     internal class Program
     {
+        static string LOG_ROOT_DIR = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         static void Main(string[] args)
         {
-            int row = 0;
+           
             using (var slu = new SluIo())
             {
                 slu.Open();
+                int row = 0;
                 for (int unit = 0; unit < 2; unit++)
                 {
                     for (int slot = 1; slot <= 21; slot++)
@@ -28,6 +30,7 @@ namespace Knv.SLU
                         Console.WriteLine($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} "); 
                     }
                 }
+                slu.LogSave(LOG_ROOT_DIR, MethodBase.GetCurrentMethod().Name);
             }
             Console.ReadLine();
         }
