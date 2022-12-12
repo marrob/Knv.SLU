@@ -1,4 +1,19 @@
-﻿
+﻿/*
+ * A QuickUSB
+ * https://github.com/BitwiseSystems/QuickUSB
+ * 
+ * A QuckUSB az SLU- kártyáival az alábbi jelekke kommunikál:
+ * 1.Card Reset
+ * 2.Card Select
+ * 3.Read/Write
+ * 4.Address bus 8bit
+ * 5.Data bus 8bit
+ * 6.Strobe
+ * 
+ * 
+ */
+
+
 namespace Knv.SLU
 {
     using System;
@@ -60,6 +75,15 @@ namespace Knv.SLU
                     {
                         LogWriteLine($"SluIo.Open {devname} failed.");
                     }
+
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_WORDWIDE, 0x0000); //0x01
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_FIFO_CONFIG, 0x00A2); //0x03
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTC, 0xFFFF); //0x0B
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTD, 0xFFFF); //0x0C
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFE); //0x09
+                    System.Threading.Thread.Sleep(200);
+                    qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
 
                     var x = ReadRegister((byte)unit, 0, 0);
                 }
@@ -130,7 +154,7 @@ namespace Knv.SLU
              * FF 00 00 43 43 43 43 43\
              * 
              * Szia Robi! Mizu? kutyagumi
-             * Ne légy troll!!!!!!!!!!!!!!!!!!
+             * Ne légy troll!!!!!!!!!!!!!!!!!! Te Fasz
              * 
              */
 
@@ -140,9 +164,6 @@ namespace Knv.SLU
             _quickUsbs[unit].WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
 
             System.Threading.Thread.Sleep(10);
-
-            _quickUsbs[unit].WriteCommand(0x08, new byte[] { }, 0);
-
             byte[] readBytes = new byte[8];
             uint rdLength = (uint)readBytes.Length;
             _quickUsbs[unit].ReadData(readBytes, ref rdLength);

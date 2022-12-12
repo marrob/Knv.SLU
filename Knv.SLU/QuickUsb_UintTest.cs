@@ -8,7 +8,10 @@ namespace Knv.SLU
     using System.Text;
     using System.Threading.Tasks;
     using BitwiseSystems;
+    using Knv.SLU.Common;
+    using Microsoft.Win32;
     using NUnit.Framework;
+    using System.Diagnostics;
 
     [TestFixture]
     internal class QuickUsb_UintTest
@@ -30,8 +33,56 @@ namespace Knv.SLU
 
                 Console.WriteLine(qu.LastError().ToString());
                 qu.Close();
-
             }
+        }
+
+        [Test]
+        public void QuickUsbReadSettings()
+        {
+            var qu = new QuickUsb();
+            qu.Open("QUSB-1");
+
+            int i = 0;
+            foreach (QuickUsb.Setting param in Enum.GetValues(typeof(QuickUsb.Setting)))
+            {
+                ushort value;
+                if ((i++ % 2) != 0)
+                {
+                    qu.ReadSetting(param, out value);
+                    string line = $"{Enum.GetName(typeof(QuickUsb.Setting), param)}:{value:X4}";
+                    Console.WriteLine(line);
+                }
+            }
+            qu.Close();
+        }
+
+
+
+
+  
+
+
+        [Test]
+        public void SluRequesResponse()
+        {
+            var qu = new QuickUsb();
+            qu.Open("QUSB-1");
+
+            byte unit = 1;
+            byte slot = 2;
+            byte register = 0;
+
+            var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            uint wrlength = (uint)bytes2write.Length;
+
+            qu.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
+            qu.WriteCommand(0x00, new byte[] { 0x08, 0x00, 0x00, 0x00 }, 4);
+
+            byte[] readBytes = new byte[8];
+            uint rdLength = (uint)readBytes.Length;
+            qu.ReadData(readBytes, ref rdLength);
+
+            qu.Close();
         }
     }
 }

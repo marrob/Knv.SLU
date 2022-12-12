@@ -27,7 +27,8 @@ namespace Knv.SLU
                         var type = slu.ReadRegister((byte)unit, (byte)slot, 0);
                         string name = "";
                         slu.CardTypes.TryGetValue(type, out name);
-                        Console.WriteLine($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} "); 
+                        if(type != 0xFF)
+                            Console.WriteLine($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} "); 
                     }
                 }
                 slu.LogSave(LOG_ROOT_DIR, MethodBase.GetCurrentMethod().Name);
