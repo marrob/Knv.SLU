@@ -44,7 +44,7 @@ namespace Knv.SLU
                     int row = 0;
                     for (int unit = 0; unit < 2; unit++)
                     {
-                        for (int slot = 1; slot <= 21; slot++)
+                        for (int slot = 0; slot <= 21; slot++)
                         {
                             row++;
                             var type = slu.ReadRegister((byte)unit, (byte)slot, 0);
@@ -73,16 +73,6 @@ namespace Knv.SLU
                 }
             }
         }
-
-        [Test]
-        public void SortOfSluNames()
-        {
-            string[] names = new string[] { "QUSB-2", "QUSB-1", "QUSB-0", "QUSB-3" };
-            Array.Sort(names, StringComparer.CurrentCultureIgnoreCase);
-            Assert.AreEqual(new string[] { "QUSB-0", "QUSB-1", "QUSB-2", "QUSB-3" }, names);
-        }
-
-
 
     }
 }

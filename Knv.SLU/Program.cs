@@ -21,7 +21,7 @@ namespace Knv.SLU
                 int row = 0;
                 for (int unit = 0; unit < 2; unit++)
                 {
-                    for (int slot = 1; slot <= 21; slot++)
+                    for (int slot = 0; slot <= 21; slot++)
                     {
                         row++;
                         var type = slu.ReadRegister((byte)unit, (byte)slot, 0);

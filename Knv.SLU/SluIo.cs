@@ -11,6 +11,13 @@
  * 6.Strobe
  * 
  * 
+ * Szabalyok:
+ * 
+ * Az SLU cimek 0-tol kell hogy kezodjenek es nem lehet kzottuk szunet
+ * Ervenyes SLU citaromany: 0,1,2 3
+ * Erventelen SLU cimtartomany:0,2,3,4
+ * 
+ * 
  */
 
 
@@ -28,10 +35,19 @@ namespace Knv.SLU
 
     public class SluIo : IDisposable
     {
-        readonly List<QuickUsb> _quickUsbs = new List<QuickUsb>();
+        /// <summary>
+        /// Type of Card example: 0x32 -> E6198B This the SLU
+        /// </summary>
+        public const byte REG_CARD_TYPE = 0x00;
+
+        /// <summary>
+        /// Az SLU unit nak is van fixture id-ja, ez az SLU cime pl SLU0, SLU1...stb.
+        /// </summary>
+        public const byte REG_FIXTURE_ID = 0x01;
+
+        readonly Dictionary<int, QuickUsb> _quickUsbs = new Dictionary<int, QuickUsb>();
         readonly List<string> _logLines = new List<string>();
         public Dictionary<int, string> CardTypes = new Dictionary<int, string>();
-
         bool _disposed = false;
 
         public SluIo()
@@ -49,23 +65,27 @@ namespace Knv.SLU
             CardTypes.Add(0x18, "U7177A");
             CardTypes.Add(0x19, "U7178A");
             CardTypes.Add(0x20, "U7179A");
-            CardTypes.Add(0x32, "E6198B");
+            CardTypes.Add(0x32, "E6198B"); //Ez mindig a Slot-0-as cimen van, ez az SLU
             CardTypes.Add(0x43, "E8782A");
             CardTypes.Add(0x47, "E8783A");
         }
 
         public void Open()
         {
+            /*
+             * A QUSB-0 nem feltetlenul az SLU0-hoz tartozik!!!
+             * A QUSB-n-tol meg kell kerdezni hogy milyen cimhez tartozik... de ez a dokumentcioval ellentetben nem mukodik.
+             * Ha a QUSB-x-en kikuldott slu type lekerdezes ertek nem 0xFF akkor az a slu az.
+             */
 
             var devnames = QuickUsb.FindModules();//QUSB-0, QUSB-1...
-            Array.Sort(devnames, StringComparer.CurrentCultureIgnoreCase);
             for (int unit = 0; unit < devnames.Length; unit++)
             {
                 var devname = devnames[unit];
                 try
                 {
                     var qusb = new QuickUsb();
-                    _quickUsbs.Add(qusb);
+
 
                     if (qusb.Open(devname))
                     {
@@ -85,7 +105,18 @@ namespace Knv.SLU
                     System.Threading.Thread.Sleep(200);
                     qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
 
-                    var x = ReadRegister((byte)unit, 0, 0);
+                    //Beprobalkozik az SLU cimekkel, ahol jon valsz az ervenyes SLU cim
+                    for (byte address = 0; address < devnames.Length; address++)
+                    { 
+                        var slutype = ReadRegister(qusb, address, REG_CARD_TYPE);
+                        if (slutype != 0xFF)
+                        {
+                            if (slutype != 0x32)
+                                throw new Exception($"SLU unit {slutype:X2} not supported."); 
+                            _quickUsbs.Add(address, qusb);
+                            break;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -110,9 +141,9 @@ namespace Knv.SLU
         /// Write a card Register
         /// </summary>
         /// <param name="unit">SLU0:0 SLU1:1</param>
-        /// <param name="slot">Indes of slots 1..21 </param>
-        /// <param name="register">Register of Card</param>
-        /// <param name="data">Data of Register</param>
+        /// <param name="slot">Indes of slots 1..21. The Slot 0 is the SLU itself. </param>
+        /// <param name="register">Register Address of Card</param>
+        /// <param name="data">Write Value of the register</param>
         public void WriteRegister(byte unit, byte slot, byte register, byte data)
         {
             /*
@@ -136,14 +167,37 @@ namespace Knv.SLU
              * 
              */
 
-            var bytes2write = new byte[] { 0x0A, (byte)((unit << 5)| slot), register, data, 0xFF, 0xFF, 0xFF, 0xFF };
+            var bytes2write = new byte[] { 0x0A, (byte)((unit << 5) | slot), register, data, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"WrReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint length = (uint)bytes2write.Length;
-            _quickUsbs[unit].WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
-
+            QuickUsb qusb;
+            if (!_quickUsbs.TryGetValue(unit, out qusb))
+                throw new Exception($"The requested SLU address {unit:X2} invalid");
+            qusb.WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
         }
 
+        /// <summary>
+        /// Ez csak az SLU unit-hoz hasznalhato
+        /// </summary>
+        /// <param name="qusb"></param>
+        /// <param name="register"></param>
+        /// <param name="data"></param
+        [Obsolete("Eelmeletileg shoa nem kell hasznalani")]
+        public void WriteRegister(QuickUsb qusb, byte register, byte data)
+        {
+            var bytes2write = new byte[] { 0x0A, 0x00, register, data, 0xFF, 0xFF, 0xFF, 0xFF };
+            LogWriteLine($"WrReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
+            uint length = (uint)bytes2write.Length;
+            qusb.WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
+        }
 
+        /// <summary>
+        /// Read a Register
+        /// </summary>
+        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slot">Indes of slots 1..21. The Slot 0 is the SLU itself.</param>
+        /// <param name="register">Register Address of the Card</param>
+        /// <returns>Value of the register</returns>
         public byte ReadRegister(byte unit, byte slot, byte register)
         {
             byte retval = 0;
@@ -158,15 +212,42 @@ namespace Knv.SLU
              * 
              */
 
+            QuickUsb qusb;
+            if (!_quickUsbs.TryGetValue(unit, out qusb))
+                throw new Exception($"The requested SLU address {unit:X2} invalid");
+
             var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint wrlength = (uint)bytes2write.Length;
-            _quickUsbs[unit].WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
+
+            qusb.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
+            System.Threading.Thread.Sleep(10);
+            byte[] readBytes = new byte[8];
+            uint rdLength = (uint)readBytes.Length;
+            qusb.ReadData(readBytes, ref rdLength);
+            LogWriteLine($"RdReg Rx: {Tools.ConvertByteArrayToLogString(readBytes)}");
+            retval = readBytes[3];
+            return retval;
+        }
+
+        /// <summary>
+        /// Csak az SLU-hoz hasznalahto
+        /// </summary>
+        /// <param name="qusb"></param>
+        /// <param name="register"></param>
+        /// <returns></returns>
+        public byte ReadRegister(QuickUsb qusb, byte unit, byte register)
+        {
+            byte retval = 0;
+            var bytes2write = new byte[] { 0x0B, (byte)(unit << 5), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
+            uint wrlength = (uint)bytes2write.Length;
+            qusb.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
 
             System.Threading.Thread.Sleep(10);
             byte[] readBytes = new byte[8];
             uint rdLength = (uint)readBytes.Length;
-            _quickUsbs[unit].ReadData(readBytes, ref rdLength);
+            qusb.ReadData(readBytes, ref rdLength);
             LogWriteLine($"RdReg Rx: {Tools.ConvertByteArrayToLogString(readBytes)}");
             retval = readBytes[3];
             return retval;
@@ -214,16 +295,15 @@ namespace Knv.SLU
 
             if (disposing)
             {
-                for (int i = 0; i < _quickUsbs.Count; i++)
+
+                foreach (KeyValuePair<int, QuickUsb> qusb in _quickUsbs)
                 {
-                    var qusb = _quickUsbs[i];
-                    if (qusb.IsOpened)
+                    if (qusb.Value.IsOpened)
                     {
-                        qusb.Close();
-                        qusb = null;
-                    }
-                    _quickUsbs.Clear();
-                }
+                        qusb.Value.Close();
+                    } 
+                }   
+                _quickUsbs.Clear();
             }
             _disposed = true;
             LogWriteLine($"SluIo.{nameof(Dispose)}.End");
