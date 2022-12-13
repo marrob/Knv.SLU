@@ -1,4 +1,5 @@
 ﻿
+
 namespace Knv.SLU
 {
 
@@ -34,34 +35,6 @@ namespace Knv.SLU
 
 
         [Test]
-        public void SluVenturiCardsPresent()
-        {
-            var cards = new List<string>();
-            using (var slu = new SluIo())
-            {
-                slu.Open();
-                {
-                    int row = 0;
-                    for (int unit = 0; unit < 2; unit++)
-                    {
-                        for (int slot = 0; slot <= 21; slot++)
-                        {
-                            row++;
-                            var type = slu.ReadRegister((byte)unit, (byte)slot, 0);
-                            string name = "";
-                            slu.CardTypes.TryGetValue(type, out name);
-                            cards.Add($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} ");
-                        }
-                    }
-                }
-
-                slu.LogSave(LOG_ROOT_DIR, MethodBase.GetCurrentMethod().Name);
-            }
-            foreach (var card in cards)
-                TestContext.Out.WriteLine(card);
-        }
-
-        [Test]
         public void IsSlu0InstCardIsPresent()
         {
             using (var slu = new SluIo())
@@ -69,7 +42,41 @@ namespace Knv.SLU
                 slu.Open();
                 {
                     var cardtype = slu.ReadRegister(0, 21, 0);
-                    Assert.AreEqual(0x43, cardtype);
+                    Assert.IsTrue(slu.CardIsPresent(0, 21));
+                }
+            }
+        }
+
+        [Test]
+        public void WriteReadRelyRegister()
+        {
+            using (var slu = new SluIo())
+            {
+                byte testvalue = 0x5A;
+                slu.Open();
+                {
+                    slu.WriteRegister(0, 1, 0x04, testvalue); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-29
+                    // The register of relyas are write only... (when you read you will read always 0xFF)
+                    Assert.AreEqual(0xFF, slu.ReadRegister(0, 1, 0x04));
+                }
+            }
+        }
+
+        [Test]
+        public void TestSwitching()
+        {
+            using (var slu = new SluIo())
+            {
+                slu.Open();
+                {
+
+                    for (int i = 0; i < 20; i++)
+                    {
+                        slu.WriteRegister(0, 1, 0x04, 0x01); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-2
+                        System.Threading.Thread.Sleep(5);
+                        slu.WriteRegister(0, 1, 0x04, 0x00); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-29
+                        System.Threading.Thread.Sleep(5);
+                    }
                 }
             }
         }

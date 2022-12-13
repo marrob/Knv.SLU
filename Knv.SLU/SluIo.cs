@@ -77,7 +77,6 @@ namespace Knv.SLU
              * A QUSB-n-tol meg kell kerdezni hogy milyen cimhez tartozik... de ez a dokumentcioval ellentetben nem mukodik.
              * Ha a QUSB-x-en kikuldott slu type lekerdezes ertek nem 0xFF akkor az a slu az.
              */
-
             var devnames = QuickUsb.FindModules();//QUSB-0, QUSB-1...
             for (int unit = 0; unit < devnames.Length; unit++)
             {
@@ -138,6 +137,46 @@ namespace Knv.SLU
         }
 
         /// <summary>
+        /// Card Model Number is Name of type code...
+        /// example: E6175A -> 0x01
+        /// </summary>
+        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slot">Index of slots 1..21. The Slot 0 is the SLU itself.</param>
+        /// <returns> E6198B </returns>
+        public string GetCardModel(byte unit, byte slot)
+        {
+            var code = ReadRegister(unit, slot, REG_CARD_TYPE);
+            string type = string.Empty;
+            if (!CardTypes.TryGetValue(code, out type))
+                type = "UNKNOWN";
+            return type;
+        }
+
+        /// <summary>
+        /// Card Type is valu of REG_CARD_TYPE register
+        /// example: 0x01
+        /// </summary>
+        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slot">Index of slots 1..21. The Slot 0 is the SLU itself.</param>
+        /// <returns> 0x01 </returns>
+        public byte GetCardType(byte unit, byte slot)
+        {
+            return ReadRegister(unit, slot, REG_CARD_TYPE);
+        }
+
+        /// <summary>
+        /// Check card presence
+        /// </summary>
+        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slot">Index of slots 1..21. The Slot 0 is the SLU itself.</param>
+        /// <returns>It is true if slot is not empty.</returns>
+        public bool CardIsPresent(byte unit, byte slot)
+        {
+            var code = ReadRegister(unit, slot, REG_CARD_TYPE);
+            return code != 0xFF;
+        }
+
+        /// <summary>
         /// Write a card Register
         /// </summary>
         /// <param name="unit">SLU0:0 SLU1:1</param>
@@ -173,21 +212,6 @@ namespace Knv.SLU
             QuickUsb qusb;
             if (!_quickUsbs.TryGetValue(unit, out qusb))
                 throw new Exception($"The requested SLU address {unit:X2} invalid");
-            qusb.WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
-        }
-
-        /// <summary>
-        /// Ez csak az SLU unit-hoz hasznalhato
-        /// </summary>
-        /// <param name="qusb"></param>
-        /// <param name="register"></param>
-        /// <param name="data"></param
-        [Obsolete("Eelmeletileg shoa nem kell hasznalani")]
-        public void WriteRegister(QuickUsb qusb, byte register, byte data)
-        {
-            var bytes2write = new byte[] { 0x0A, 0x00, register, data, 0xFF, 0xFF, 0xFF, 0xFF };
-            LogWriteLine($"WrReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
-            uint length = (uint)bytes2write.Length;
             qusb.WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
         }
 
@@ -236,7 +260,7 @@ namespace Knv.SLU
         /// <param name="qusb"></param>
         /// <param name="register"></param>
         /// <returns></returns>
-        public byte ReadRegister(QuickUsb qusb, byte unit, byte register)
+        byte ReadRegister(QuickUsb qusb, byte unit, byte register)
         {
             byte retval = 0;
             var bytes2write = new byte[] { 0x0B, (byte)(unit << 5), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -254,10 +278,6 @@ namespace Knv.SLU
         }
 
 
-        private void SluInit()
-        { 
-        
-        }
 
         #region Logging
         public void LogWriteLine(string line)

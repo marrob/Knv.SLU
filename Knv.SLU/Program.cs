@@ -14,39 +14,28 @@ namespace Knv.SLU
         static string LOG_ROOT_DIR = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         static void Main(string[] args)
         {
-           
             using (var slu = new SluIo())
             {
                 slu.Open();
                 int row = 0;
-                for (int unit = 0; unit < 2; unit++)
+                for (byte unit = 0; unit < SluIo.GetAttachedNameOfUnits().Count; unit++)
                 {
-                    for (int slot = 0; slot <= 21; slot++)
+                    for (byte slot = 0; slot <= 21; slot++)
                     {
-                        row++;
-                        var type = slu.ReadRegister((byte)unit, (byte)slot, 0);
-                        string name = "";
-                        slu.CardTypes.TryGetValue(type, out name);
-                        if(type != 0xFF)
-                            Console.WriteLine($"{row}. SLU{unit}, Slot: {slot}, Card Type:{name} - {type:X2} "); 
+                        if (slu.CardIsPresent(unit, slot))
+                        {
+                            row++;
+                            Console.WriteLine($"{row}. Unit:{unit}, Slot {slot}, Model:{slu.GetCardModel(unit, slot)} 0x{slu.GetCardType(unit, slot):X2} ");
+                        }
                     }
                 }
+
+                if (row == 0)
+                    Console.WriteLine("Cards not found...");
                 slu.LogSave(LOG_ROOT_DIR, MethodBase.GetCurrentMethod().Name);
             }
+
             Console.ReadLine();
         }
-
-
-        static void SluIoWriteSLU0CloseK125()
-        {
-
-            using (var slu = new SluIo())
-            {
-                slu.Open();
-                slu.WriteRegister(0, 21, 0x11, 1); //Row1 to ABUS1   
-            }
-        }
     }
-
-
 }
