@@ -33,6 +33,7 @@ namespace Knv.SLU
     using BitwiseSystems;
     using Common;
 
+    [Obsolete("Túlságosan bele lett integrával a Quick USB és a Platform logika, ezért nehéz benchként használni")]
     public class SluIo : IDisposable
     {
         /// <summary>
@@ -70,6 +71,8 @@ namespace Knv.SLU
             CardTypes.Add(0x47, "E8783A");
         }
 
+
+        [Obsolete("Túlságosan bele lett integrával a Quick USB és a Platform logika, ezért nehéz benchként használni")]
         public void Open()
         {
             /*
