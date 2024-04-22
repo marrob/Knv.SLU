@@ -56,12 +56,6 @@ namespace Knv.SLU
             qu.Close();
         }
 
-
-
-
-  
-
-
         [Test]
         public void SluRequesResponse()
         {
