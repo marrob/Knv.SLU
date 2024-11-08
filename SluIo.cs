@@ -33,7 +33,7 @@ namespace Knv.SLU
     using BitwiseSystems;
     using Common;
 
-    [Obsolete("Túlságosan bele lett integrával a Quick USB és a Platform logika, ezért nehéz benchként használni")]
+    //[Obsolete("Túlságosan bele lett integrával a Quick USB és a Platform logika, ezért nehéz benchként használni")]
     public class SluIo : IDisposable
     {
         /// <summary>
@@ -71,8 +71,6 @@ namespace Knv.SLU
             CardTypes.Add(0x47, "E8783A");
         }
 
-
-        [Obsolete("Túlságosan bele lett integrával a Quick USB és a Platform logika, ezért nehéz benchként használni")]
         public void Open()
         {
             /*
@@ -81,7 +79,7 @@ namespace Knv.SLU
              * Ha a QUSB-x-en kikuldott slu type lekerdezes ertek nem 0xFF akkor az a slu az.
              */
             var devnames = QuickUsb.FindModules();//QUSB-0, QUSB-1...
-            for (int unit = 0; unit < devnames.Length; unit++)
+            for (byte unit = 0; unit < devnames.Length; unit++)
             {
                 var devname = devnames[unit];
                 try
@@ -107,16 +105,16 @@ namespace Knv.SLU
                     System.Threading.Thread.Sleep(200);
                     qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
 
-                    //Beprobalkozik az SLU cimekkel, ahol jon valsz az ervenyes SLU cim
-                    for (byte address = 0; address < devnames.Length; address++)
+                    //Beprobalkozik az kártya cimekkel, ahol jon valsz az ervenyes SLU cim
                     { 
-                        var slutype = ReadRegister(qusb, address, REG_CARD_TYPE);
-                        if (slutype != 0xFF)
+                        for (byte slot = 0; slot < 21; slot++)
                         {
-                            if (slutype != 0x32)
-                                throw new Exception($"SLU unit {slutype:X2} not supported."); 
-                            _quickUsbs.Add(address, qusb);
-                            break;
+                            var slutype = ReadRegister(qusb, unit, slot, REG_CARD_TYPE);
+                            if (slutype != 0xFF)
+                            {
+                                _quickUsbs.Add(unit, qusb);
+                                break;
+                            }
                         }
                     }
                 }
@@ -263,10 +261,10 @@ namespace Knv.SLU
         /// <param name="qusb"></param>
         /// <param name="register"></param>
         /// <returns></returns>
-        byte ReadRegister(QuickUsb qusb, byte unit, byte register)
+        byte ReadRegister(QuickUsb qusb, byte unit, byte slot, byte register)
         {
             byte retval = 0;
-            var bytes2write = new byte[] { 0x0B, (byte)(unit << 5), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint wrlength = (uint)bytes2write.Length;
             qusb.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);

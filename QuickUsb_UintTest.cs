@@ -1,17 +1,9 @@
 ﻿
 namespace Knv.SLU
 {
-
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using BitwiseSystems;
-    using Knv.SLU.Common;
-    using Microsoft.Win32;
     using NUnit.Framework;
-    using System.Diagnostics;
 
     [TestFixture]
     internal class QuickUsb_UintTest
