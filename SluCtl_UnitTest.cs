@@ -1,5 +1,4 @@
 ﻿
-
 namespace Knv.SLU
 {
     using System;
@@ -12,8 +11,14 @@ namespace Knv.SLU
     [TestFixture]
     internal class SluCtl_UnitTes
     {
-        string LOG_ROOT_DIR = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         const byte SLOT = 0; //0..21
+
+        [Test]
+        public void SluCount()
+        {
+            var devname = QuickUsb.FindModules().ToList<string>();
+            Assert.IsTrue(devname.Contains("QUSB-0"));
+        }
 
 
         [Test]
@@ -324,6 +329,7 @@ namespace Knv.SLU
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x43, type); //0x43 -> E8782A 
 
+
                 //--- UUT_I1 - Ez az első relé a láncban ---
                 slu.WriteRegister(0, SLOT, 0x06, 0x01);
 
@@ -344,13 +350,293 @@ namespace Knv.SLU
             }
         }
 
-
+        /// <summary>
+        /// L3_M4_HI
+        /// INST1 - AB4 - ROW8
+        /// </summary>
         [Test]
-        public void SluCount()
+        public void L3_M4_HI()
         {
-            var devname = QuickUsb.FindModules().ToList<string>();
-            Assert.IsTrue(devname.Contains("QUSB-0"));
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB4_I1 ---
+                slu.WriteRegister(0, SLOT, 0x26, 0x01);
+
+                //--- K4 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x08);
+
+                //--- AB4_R8 ---
+                slu.WriteRegister(0, SLOT, 0x29, 0x80);
+
+            }
         }
 
+        /// <summary>
+        /// L3_M4_LO
+        /// INST2 - AB3 - ROW10
+        /// </summary>
+        [Test]
+        public void L3_M4_LO()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                                             
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB3_I2 ---
+                slu.WriteRegister(0, SLOT, 0x1E, 0x02);
+
+                //--- K3 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x04);
+
+                //--- AB3_R10 ---
+                slu.WriteRegister(0, SLOT, 0x22, 0x02);
+            }
+        }
+
+        /// <summary>
+        /// M1_L2_HI
+        /// INST1 - AB2 - ROW1
+        /// </summary>
+        [Test]
+        public void M1_L2_HI()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB2_I1 ---
+                slu.WriteRegister(0, SLOT, 0x16, 0x01);
+
+                //--- K2 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x02);
+
+                //--- AB2_R1 ---
+                slu.WriteRegister(0, SLOT, 0x19, 0x01);
+            }
+        }
+
+
+        /// <summary>
+        /// M1_L2_LO
+        /// INST2 - AB1 - ROW2
+        /// </summary>
+        [Test]
+        public void M1_L2_LO()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB1_I2 ---
+                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
+
+                //--- K1 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x01);
+
+                //--- AB1_R2 ---
+                slu.WriteRegister(0, SLOT, 0x11, 0x02);
+            }
+        }
+
+
+        /// <summary>
+        /// M1_M2_HI
+        /// INST1 - AB2 - ROW3
+        /// </summary>
+        [Test]
+        public void M1_M2_HI()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB2_I1 ---
+                slu.WriteRegister(0, SLOT, 0x16, 0x01);
+
+                //--- K2 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x02);
+
+                //--- AB2_R3 ---
+                slu.WriteRegister(0, SLOT, 0x19, 0x04);
+            }
+        }
+
+        /// <summary>
+        /// M1_M2_LO
+        /// INST2 - AB1 - ROW2
+        /// </summary>
+        [Test]
+        public void M1_M2_LO()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB1_I2 ---
+                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
+
+                //--- K1 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x01);
+
+                //--- AB1_R2 ---
+                slu.WriteRegister(0, SLOT, 0x11, 0x02);
+            }
+        }
+
+        /// <summary>
+        /// M3_L3_HI
+        /// INST1 - AB2 - ROW8
+        /// </summary>
+        [Test]
+        public void M3_L3_HI()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB2_I1 ---
+                slu.WriteRegister(0, SLOT, 0x16, 0x01);
+
+                //--- K2 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x02);
+
+                //--- AB2_R8 ---
+                slu.WriteRegister(0, SLOT, 0x19, 0x80);
+            }
+        }
+
+        /// <summary>
+        /// M3_L3_LO
+        /// INST2 - AB1 - ROW9
+        /// </summary>
+        [Test]
+        public void M3_L3_LO()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB1_I2 ---
+                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
+
+                //--- K1 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x01);
+
+                //--- AB1_R9 ---
+                slu.WriteRegister(0, SLOT, 0x12, 0x01);
+            }
+        }
+
+        /// <summary>
+        /// Offset
+        /// INST1 - AB2 - ROW1 - AB1 - INST2
+        /// </summary>
+        [Test]
+        public void Offset()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AB2_I1 ---
+                slu.WriteRegister(0, SLOT, 0x16, 0x01);
+
+                //--- K2 és K1 ---
+                slu.WriteRegister(0, SLOT, 0x04, 0x03);
+
+                //--- AB2_R1 ---
+                slu.WriteRegister(0, SLOT, 0x19, 0x01);
+
+                //--- AB1_R1 ---
+                slu.WriteRegister(0, SLOT, 0x11, 0x01);
+
+                //--- AB1_R2 ---
+                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
+            }
+        }
+
+        [Test]
+        public void Aux34()
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01);
+
+                //--- AUX_R34 ---
+                slu.WriteRegister(0, SLOT, 0x0D, 0x02);
+            }
+        }
     }
 }
