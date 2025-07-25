@@ -9,7 +9,7 @@ namespace Knv.SLU
 
 
     [TestFixture]
-    internal class SluCtl_UnitTes
+    internal class MatirxCard_UnitTest
     {
         const byte SLOT = 0; //0..21
 

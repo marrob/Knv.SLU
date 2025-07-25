@@ -56,10 +56,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Tools.cs" />
+    <Compile Include="N9377A_UnitTest.cs" />
+    <Compile Include="U7179A_UnitTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SluCtl.cs" />
-    <Compile Include="SluCtl_UnitTest.cs" />
+    <Compile Include="MatirxCard_UnitTest.cs" />
     <Compile Include="SluIo_UnitTest.cs" />
     <Compile Include="QuickUsb_UintTest.cs" />
     <Compile Include="SluIo.cs" />
