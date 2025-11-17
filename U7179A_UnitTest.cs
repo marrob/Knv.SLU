@@ -36,7 +36,7 @@ namespace Knv.SLU
 
                     slu.WriteRegister(0, slot, 0x04, mask_low);
                     slu.WriteRegister(0, slot, 0x05, mask_high);
-                    Thread.Sleep(100);
+                    Thread.Sleep(100);// Ide tedd a töréspontot és kattintgasd végig egyenként...
                     slu.WriteRegister(0, slot, 0x04, 0x00);
                     slu.WriteRegister(0, slot, 0x05, 0x00);
                     Thread.Sleep(100);
@@ -89,7 +89,7 @@ namespace Knv.SLU
 
                     slu.WriteRegister(0, slot, 0x06, mask_low);
                     slu.WriteRegister(0, slot, 0x07, mask_high);
-                    Thread.Sleep(100);
+                    Thread.Sleep(100);// Ide tedd a töréspontot és kattintgasd végig egyenként...
                     slu.WriteRegister(0, slot, 0x06, 0x00);
                     slu.WriteRegister(0, slot, 0x07, 0x00);
                     Thread.Sleep(100);
@@ -136,7 +136,7 @@ namespace Knv.SLU
                 for (int channel = 0; channel < 16; channel++)
                 {
                     slu.WriteRegister(0, slot, 0x03, (byte)(channel + 1));
-                    Thread.Sleep(100);
+                    Thread.Sleep(100);// Ide tedd a töréspontot és kattintgasd végig egyenként...
                     slu.WriteRegister(0, slot, 0x03, 0);
                     Thread.Sleep(100);
                 }

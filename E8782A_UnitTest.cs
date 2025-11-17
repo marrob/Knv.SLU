@@ -9,7 +9,7 @@ namespace Knv.SLU
 
 
     [TestFixture]
-    internal class MatirxCard_UnitTest
+    internal class E8782A_UnitTest
     {
         const byte SLOT = 0; //0..21
 
@@ -71,23 +71,6 @@ namespace Knv.SLU
                                              //   slu.WriteRegister(0, 0, 0x11, 0x01); //SLU:0, Slot:0, ABUS1 & ROW1: K125 -> reg:0x11, data:0x01
                                              //   slu.WriteRegister(0, 0, 0x09, 0x01); //Aux1 - Row1: K925 -> reg:0x09, data:0x01
 
-                /*
-                //--- bus control and protection bypass relay for MRLY240314V02-PRT ---
-                //Ez rendven van a MRLY240314V02-PRT panelen ez az első TPIC és a sulyozása rendben van
-                slu.WriteRegister(0, 1, 0x05, 0x01); //"PB1" - > K1 -> reg:0x04, data:0x01
-                slu.WriteRegister(0, 1, 0x05, 0x02); //"PB2" - > K2 -> reg:0x04, data:0x02
-                slu.WriteRegister(0, 1, 0x05, 0x04); //"PB3" - > K3 -> reg:0x04, data:0x04
-                slu.WriteRegister(0, 1, 0x05, 0x08); //"PB4" - > K4 -> reg:0x04, data:0x08
-
-
-                // --- MRLY240314V02-PRT --- 
-                //ezzel lehet végig menni az összes relémeghajtón 
-                for (int i = 5; i < 54 + 5; i++) 
-                {
-                    slu.WriteRegister(0, 0, (byte)i, 0xFF);
-                }
-                */
-
                 //--- Eredeti E8782A bus control and protection bypass relay ---
                 slu.WriteRegister(0, SLOT, 0x04, 0x01); //"PB1" - > K1 -> reg:0x04, data:0x01
                 slu.WriteRegister(0, SLOT, 0x04, 0x02); //"PB2" - > K2 -> reg:0x04, data:0x02
@@ -141,7 +124,6 @@ namespace Knv.SLU
             }
         }
 
-
         [Test]
         public void Bypass()
         {
@@ -165,7 +147,6 @@ namespace Knv.SLU
                 slu.WriteRegister(0, SLOT, 0x04, 0x01);
 
             }
-
         }
 
         [Test]
@@ -188,8 +169,6 @@ namespace Knv.SLU
 
                 //--- AB4_R40 - Az utolsó relé a láncban ---
                 slu.WriteRegister(0, SLOT, 0x2D, 0x80);
-
-
             }
         }
 
@@ -256,9 +235,6 @@ namespace Knv.SLU
                 slu.WriteRegister(0, SLOT, 0x04, 0x01);
             }
         }
-
-
-
 
         [Test]
         public void OpenAllRealy()
