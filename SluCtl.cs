@@ -20,15 +20,12 @@
  * 
  */
 
-
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
-    using System.Runtime.InteropServices;
     //C:\Program Files (x86)\Bitwise Systems\QuickUsb\Library\Assembly
     using BitwiseSystems;
     using Common;

@@ -1,8 +1,6 @@
-﻿namespace Knv.SLU.Common
+﻿namespace Knv.SLU.Discovery.Common
 {
     using System;
-    using System.Linq.Expressions;
-    using System.Runtime.InteropServices;
     using System.Globalization;
 
     internal static class Tools

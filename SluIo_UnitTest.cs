@@ -1,18 +1,9 @@
 ﻿
 
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
-
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using BitwiseSystems;
     using NUnit.Framework;
-    using System.Diagnostics;
-    using System.Reflection;
-
 
     [TestFixture]
     internal class SluIo_UnitTes

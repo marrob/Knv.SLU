@@ -21,14 +21,12 @@
  */
 
 
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
-    using System.Runtime.InteropServices;
     //C:\Program Files (x86)\Bitwise Systems\QuickUsb\Library\Assembly
     using BitwiseSystems;
     using Common;
@@ -66,6 +64,7 @@ namespace Knv.SLU
             CardTypes.Add(0x18, "U7177A");
             CardTypes.Add(0x19, "U7178A");
             CardTypes.Add(0x20, "U7179A");
+            CardTypes.Add(0x1E, "E6198A"); //"old" SLU
             CardTypes.Add(0x32, "E6198B"); //Ez mindig a Slot-0-as cimen van, ez az SLU
             CardTypes.Add(0x43, "E8782A");
             CardTypes.Add(0x47, "E8783A");

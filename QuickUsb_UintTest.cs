@@ -1,5 +1,5 @@
 ﻿
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
     using System;
     using BitwiseSystems;

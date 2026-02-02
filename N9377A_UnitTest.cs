@@ -1,8 +1,7 @@
 ﻿
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
     using System;
-    using System.Linq;
     using System.Threading;
     using BitwiseSystems;
     using NUnit.Framework;

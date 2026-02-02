@@ -1,5 +1,5 @@
 ﻿
-namespace Knv.SLU
+namespace Knv.SLU.Discovery
 {
     using System;
     using System.Linq;
@@ -273,6 +273,56 @@ namespace Knv.SLU
                 
                 //--- Reset ---
                 slu.WriteRegister(0, SLOT, 0x02, 0x01); //OK 25.11.17
+            }
+        }
+
+
+
+        [Test]
+        public void CAN3_Termination() //Ez rossz
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x47, type); //0x47 -> E8783A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01); //OK 25.11.17
+
+
+                slu.WriteRegister(0, SLOT, 0x09, 0x30); // AUX29-ROW29,ROW30-AUX30  Goppel-t kapcsolja ROW29/ROW30-ra            
+                slu.WriteRegister(0, SLOT, 0x21, 0x10); // ABUS3-ROW29  ROW29/30 kapcsolja az ABUS3/ABUS4-re
+                slu.WriteRegister(0, SLOT, 0x29, 0x20); // ABUS4-ROW30
+
+                slu.WriteRegister(0, SLOT, 0x22, 0x02); // ABUS3-ROW34  ABUS3/ABUS4-et kapcsolja lezáró ellenállásra
+                slu.WriteRegister(0, SLOT, 0x2A, 0x01); // ABUS4-ROW33
+            }
+        }
+
+        [Test]
+        public void CAN2_Termination() //Ez a jó
+        {
+            var qusb = new QuickUsb();
+            qusb.Open("QUSB-0");
+
+            using (var slu = new SluCtl(qusb))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x47, type); //0x47 -> E8783A 
+
+                //--- Reset ---
+                slu.WriteRegister(0, SLOT, 0x02, 0x01); //OK 25.11.17
+
+                slu.WriteRegister(0, SLOT, 0x09, 0x03); // AUX25-ROW25,AUX26-ROW26 
+                                                        
+                slu.WriteRegister(0, SLOT, 0x21, 0x01); // ABUS3-ROW25
+                slu.WriteRegister(0, SLOT, 0x29, 0x02); // ABUS4-ROW26
+
+                slu.WriteRegister(0, SLOT, 0x22, 0x02); // ABUS3-ROW34 ABUS3/ABUS4-et kapcsolja lezáró ellenállásra
+                slu.WriteRegister(0, SLOT, 0x2A, 0x01); // ABUS4-ROW33
             }
         }
     }
