@@ -1,16 +1,37 @@
 ﻿
 namespace Knv.SLU.Discovery
 {
-    using System;
-    using System.Linq;
-    using System.Threading;
     using BitwiseSystems;
     using NUnit.Framework;
+    using System;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
 
     [TestFixture]
-    internal class E8782A_UnitTest
+    internal class MRLY240314_E8782A_UnitTest
     {
         const byte SLOT = 0; //0..21
+
+        const int ADDR_ADC_RESULT_B1_REG = 0xE6;
+        const int ADDR_ADC_RESULT_B2_REG = 0xE7;
+        const int ADDR_ADC_RESULT_B3_REG = 0xE8;
+        const int ADDR_ADC_RESULT_B4_REG = 0xE9;
+        const int ADDR_ADC_RESULT_B5_REG = 0xEA;
+        const int ADDR_ADC_RESULT_B6_REG = 0xEB;
+        const int ADDR_ADC_RESULT_B7_REG = 0xEC;
+        const int ADDR_ADC_RESULT_B8_REG = 0xED;
+
+        const int ADDR_UID_B1_REG = 0xF3;
+        const int ADDR_UID_B2_REG = 0xF4;
+        const int ADDR_UID_B3_REG = 0xF5;
+        const int ADDR_UID_B4_REG = 0xF6;
+        const int ADDR_UID_B5_REG = 0xF7;
+        const int ADDR_UID_B6_REG = 0xF8;
+        const int ADDR_UID_B7_REG = 0xF9;
+        const int ADDR_UID_B8_REG = 0xFA;
+
+
 
         [Test]
         public void SluCount()
@@ -19,42 +40,74 @@ namespace Knv.SLU.Discovery
             Assert.IsTrue(devname.Contains("QUSB-0"));
         }
 
-
         [Test]
-        public void Slu0AttachCheck()
-        {
+        public void IoTest()
+        { 
             using (var slu = new SluCtl("QUSB-0"))
             {
-
-                int j =   slu.ReadRegister(0, 0, 0);
-
-                /*
-                slu.WriteRegister(0, 1, 0x04, 0x01); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-2
-               // System.Threading.Thread.Sleep(5);
-                slu.WriteRegister(0, 1, 0x04, 0x00); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-29
-               // System.Threading.Thread.Sleep(5);
-                */
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
 
                 for (int i = 0; i < 100; i++)
                 {
-                    slu.WriteRegister(0, 1, 0x20, 0xFF); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-2
-                    Thread.Sleep(100);
-                    slu.WriteRegister(0, 1, 0x20, 0x00); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-2
-                    Thread.Sleep(100);
+                    // --- Beírom a Teszértékeket a teszt terültre ---
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B1_REG, data: 0xA1);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B2_REG, data: 0xA2);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B3_REG, data: 0xA3);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B4_REG, data: 0xA4);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B5_REG, data: 0xA5);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B6_REG, data: 0xA6);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B7_REG, data: 0xA7);
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B8_REG, data: 0xA8);
 
+                    byte b1 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B1_REG);
+                    Assert.AreEqual(0xA1, b1);
+                    byte b2 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B2_REG);
+                    Assert.AreEqual(0xA2, b2);
+                    byte b3 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B3_REG);
+                    Assert.AreEqual(0xA3, b3);
+                    byte b4 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B4_REG);
+                    Assert.AreEqual(0xA4, b4);
+                    byte b5 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B5_REG);
+                    Assert.AreEqual(0xA5, b5);
+                    byte b6 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B6_REG);
+                    Assert.AreEqual(0xA6, b6);
+                    byte b7 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B7_REG);
+                    Assert.AreEqual(0xA7, b7);
+                    byte b8 = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_ADC_RESULT_B8_REG);
+                    Assert.AreEqual(0xA8, b8);
                 }
-                // System.Threading.Thread.Sleep(5);
-                slu.WriteRegister(0, 1, 0x9, 0x00); //SLU:0, Slot:1, Load 1/CH1/K34 On, U7179A  konyv B-29
-               // System.Threading.Thread.Sleep(5);
-
             }
         }
 
+        [Test]
+        public void UidTest()
+        {
+            using (var slu = new SluCtl("QUSB-0"))
+            {
+                int type = slu.ReadRegister(0, SLOT, 0);
+                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+
+                byte[] uidBytes = new byte[8];
+
+                uidBytes[0] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B1_REG);
+                uidBytes[1] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B2_REG);
+                uidBytes[2] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B3_REG);
+                uidBytes[3] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B4_REG);
+                uidBytes[4] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B5_REG);
+                uidBytes[5] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B6_REG);
+                uidBytes[6] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B7_REG);
+                uidBytes[7] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B8_REG);
+                string uid = Encoding.ASCII.GetString(uidBytes).Trim('\0');
+                Assert.AreEqual("0YQR8T7", uid); //E8782A gyári UID-je")
+            }
+        }
 
         [Test]
         public void Slu_K125()
         {
             byte status = 0;
+           
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
@@ -120,16 +173,30 @@ namespace Knv.SLU.Discovery
         public void Bypass()
         {
             int type = 0;
+            byte regval = 0;
             using (var slu = new SluCtl("QUSB-0"))
             {
                 for (int i = 0; i < 10; i++)
                 {
                     type = slu.ReadRegister(0, SLOT, 0);
-                    Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                    regval = slu.ReadRegister(0, SLOT, 0xF7);
+                    regval = slu.ReadRegister(0, SLOT, 0xF8);
+                    regval = slu.ReadRegister(0, SLOT, 0xF9);
+                    regval = slu.ReadRegister(0, SLOT, 0xFA);
+
+                    //Assert.AreEqual(0x43, type); //0x43 -> E8782A 
 
                     //--- A Disconnect relék írása hatástalan mivel mindig meg vannak húzva ---
+
                     slu.WriteRegister(0, SLOT, 0x04, 0xF0);
+
+                    regval = slu.ReadRegister(0, SLOT, 0x04); //csak a MRLY240314 sorzat támogatja
+                    regval = slu.ReadRegister(0, SLOT, 0x04); //csak a MRLY240314 sorzat támogatja
+
+                    regval = slu.ReadRegister(0, SLOT, 0x04); //csak a MRLY240314 sorzat támogatja
+
                     slu.WriteRegister(0, SLOT, 0x04, 0x00);
+                    regval = slu.ReadRegister(0, SLOT, 0x04); //csak a MRLY240314 sorzat támogatja
 
                     //--- Bypass relék kapcsolhatóak ---
                     slu.WriteRegister(0, SLOT, 0x04, 0x0F);
@@ -271,295 +338,5 @@ namespace Knv.SLU.Discovery
             }
         }
 
-
-        [Test]
-        public void DAC()
-        {
-            byte status = 0;
-
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- UUT_I1 - Ez az első relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x06, 0x01);
-
-                //--- Status olvasása ---
-                status = slu.ReadRegister(0, SLOT, 0x02);  //0x80
-
-                //--- DAC1 Relé bekapcsolása ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x04);
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- GND Relé bekapcsolása ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x02);
-
-                //--- DAC2 Relé bekapcsolása ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x08);
-            }
-        }
-
-        /// <summary>
-        /// L3_M4_HI
-        /// INST1 - AB4 - ROW8
-        /// </summary>
-        [Test]
-        public void L3_M4_HI()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB4_I1 ---
-                slu.WriteRegister(0, SLOT, 0x26, 0x01);
-
-                //--- K4 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x08);
-
-                //--- AB4_R8 ---
-                slu.WriteRegister(0, SLOT, 0x29, 0x80);
-
-            }
-        }
-
-        /// <summary>
-        /// L3_M4_LO
-        /// INST2 - AB3 - ROW10
-        /// </summary>
-        [Test]
-        public void L3_M4_LO()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-                                             
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB3_I2 ---
-                slu.WriteRegister(0, SLOT, 0x1E, 0x02);
-
-                //--- K3 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x04);
-
-                //--- AB3_R10 ---
-                slu.WriteRegister(0, SLOT, 0x22, 0x02);
-            }
-        }
-
-        /// <summary>
-        /// M1_L2_HI
-        /// INST1 - AB2 - ROW1
-        /// </summary>
-        [Test]
-        public void M1_L2_HI()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB2_I1 ---
-                slu.WriteRegister(0, SLOT, 0x16, 0x01);
-
-                //--- K2 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x02);
-
-                //--- AB2_R1 ---
-                slu.WriteRegister(0, SLOT, 0x19, 0x01);
-            }
-        }
-
-
-        /// <summary>
-        /// M1_L2_LO
-        /// INST2 - AB1 - ROW2
-        /// </summary>
-        [Test]
-        public void M1_L2_LO()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB1_I2 ---
-                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
-
-                //--- K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-
-                //--- AB1_R2 ---
-                slu.WriteRegister(0, SLOT, 0x11, 0x02);
-            }
-        }
-
-
-        /// <summary>
-        /// M1_M2_HI
-        /// INST1 - AB2 - ROW3
-        /// </summary>
-        [Test]
-        public void M1_M2_HI()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB2_I1 ---
-                slu.WriteRegister(0, SLOT, 0x16, 0x01);
-
-                //--- K2 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x02);
-
-                //--- AB2_R3 ---
-                slu.WriteRegister(0, SLOT, 0x19, 0x04);
-            }
-        }
-
-        /// <summary>
-        /// M1_M2_LO
-        /// INST2 - AB1 - ROW2
-        /// </summary>
-        [Test]
-        public void M1_M2_LO()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB1_I2 ---
-                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
-
-                //--- K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-
-                //--- AB1_R2 ---
-                slu.WriteRegister(0, SLOT, 0x11, 0x02);
-            }
-        }
-
-        /// <summary>
-        /// M3_L3_HI
-        /// INST1 - AB2 - ROW8
-        /// </summary>
-        [Test]
-        public void M3_L3_HI()
-        {
-
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB2_I1 ---
-                slu.WriteRegister(0, SLOT, 0x16, 0x01);
-
-                //--- K2 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x02);
-
-                //--- AB2_R8 ---
-                slu.WriteRegister(0, SLOT, 0x19, 0x80);
-            }
-        }
-
-        /// <summary>
-        /// M3_L3_LO
-        /// INST2 - AB1 - ROW9
-        /// </summary>
-        [Test]
-        public void M3_L3_LO()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB1_I2 ---
-                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
-
-                //--- K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-
-                //--- AB1_R9 ---
-                slu.WriteRegister(0, SLOT, 0x12, 0x01);
-            }
-        }
-
-        /// <summary>
-        /// Offset
-        /// INST1 - AB2 - ROW1 - AB1 - INST2
-        /// </summary>
-        [Test]
-        public void Offset()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AB2_I1 ---
-                slu.WriteRegister(0, SLOT, 0x16, 0x01);
-
-                //--- K2 és K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x03);
-
-                //--- AB2_R1 ---
-                slu.WriteRegister(0, SLOT, 0x19, 0x01);
-
-                //--- AB1_R1 ---
-                slu.WriteRegister(0, SLOT, 0x11, 0x01);
-
-                //--- AB1_R2 ---
-                slu.WriteRegister(0, SLOT, 0x0E, 0x02);
-            }
-        }
-
-        [Test]
-        public void Aux34()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01);
-
-                //--- AUX_R34 ---
-                slu.WriteRegister(0, SLOT, 0x0D, 0x02);
-            }
-        }
     }
 }

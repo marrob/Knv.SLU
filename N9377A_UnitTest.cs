@@ -17,10 +17,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_LoadDisconnect_StepByStep_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -46,10 +43,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_LoadDisconnect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -70,10 +64,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_PowerSelect_StepByStep_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -98,10 +89,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_PowerSelect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -124,10 +112,7 @@ namespace Knv.SLU.Discovery
         //[TestCase(3, Description = "Slot 3")]
         public void N9377A_LoadSelect_StepByStep_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -153,10 +138,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_LoadSelect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -177,10 +159,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_CurrentSenseSelect_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -200,10 +179,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void N9377A_LoadDisconnect_On_And_PowerSelect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -249,11 +225,7 @@ namespace Knv.SLU.Discovery
                 slu.WriteRegister(0, slot, 0x06, 0x00);
                 slu.WriteRegister(0, slot, 0x07, 0x00);
                 Thread.Sleep(100);
-
-
-
             }
         }
     }
-
 }

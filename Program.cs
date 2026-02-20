@@ -1,5 +1,8 @@
-﻿using System;
+﻿using BitwiseSystems;
+using System;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Knv.SLU.Discovery
 {
@@ -8,16 +11,51 @@ namespace Knv.SLU.Discovery
         static string LOG_ROOT_DIR = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         static void Main(string[] args)
         {
-            SluIo slu = null;
+            SluCtl slu = null;
             try
             {
-                using (slu = new SluIo())
+                var racks = QuickUsb.FindModules().ToList<string>();
+                Console.WriteLine($"Attached QuickUSB devices:{string.Join(",", racks)}");
+
+                if (racks.Count == 0)
                 {
-                    slu.Open();
-                    int row = 0;
-                    for (byte unit = 0; unit < SluIo.GetAttachedNameOfUnits().Count; unit++)
+                    Console.WriteLine("No QuickUSB devices found.");
+                    return;
+                }
+
+                // Ha több racak van a User egy szám alapján kiválaszthatja melyikkel akar dolgozni
+                string devname;
+                if (racks.Count == 1)
+                {
+                    devname = racks[0];
+                    Console.WriteLine($"Using detected device: {devname}");
+                }
+                else
+                {
+                    Console.WriteLine("Select device to use (enter index or full device name):");
+                    for (int i = 0; i < racks.Count; i++)
+                        Console.WriteLine($"{i}: {racks[i]}");
+
+                    Console.Write("Selection: ");
+                    var input = Console.ReadLine();
+                    if (int.TryParse(input, out int idx) && idx >= 0 && idx < racks.Count)
+                        devname = racks[idx];
+                    else if (!string.IsNullOrWhiteSpace(input) && racks.Contains(input))
+                        devname = input;
+                    else
                     {
-                        for (byte slot = 0; slot <= 21; slot++)
+                        Console.WriteLine("Invalid selection, using first rack.");
+                        devname = racks[0];
+                    }
+                }
+
+                Console.WriteLine("Card discovery:");
+                using (slu = new SluCtl(devname))
+                {
+                    int row = 0;
+                    for (byte unit = 0; unit < racks.Count; unit++)
+                    {
+                        for (byte slot = 0; slot <= SluCtl.MAX_CARD_COUNT_IN_RACK; slot++)
                         {
                             if (slu.CardIsPresent(unit, slot))
                             {
@@ -28,7 +66,7 @@ namespace Knv.SLU.Discovery
                     }
 
                     if (row == 0)
-                        Console.WriteLine("Cards not found..."); 
+                        Console.WriteLine($"Cards not found in rack {devname}..."); 
                 }
             }
             catch (Exception ex)

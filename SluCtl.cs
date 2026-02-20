@@ -32,6 +32,9 @@ namespace Knv.SLU.Discovery
 
     public class SluCtl : IDisposable
     {
+
+        public const int MAX_CARD_COUNT_IN_RACK = 21; //+1 SLU itself
+
         /// <summary>
         /// Type of Card example: 0x32 -> E6198B This the SLU
         /// </summary>
@@ -46,8 +49,28 @@ namespace Knv.SLU.Discovery
         public Dictionary<int, string> CardTypes = new Dictionary<int, string>();
         bool _disposed = false;
 
-        public SluCtl(QuickUsb qusb)
+        public SluCtl(string qusbDeviceName) 
         {
+            CardTypes.Add(0x01, "E6175A");
+            CardTypes.Add(0x02, "E6176A");
+            CardTypes.Add(0x03, "E6177A");
+            CardTypes.Add(0x04, "E6178B");
+            CardTypes.Add(0x05, "N9378A");
+            CardTypes.Add(0x06, "N9379");
+            CardTypes.Add(0x07, "N9377A");
+            CardTypes.Add(0x0A, "E8792A");
+            CardTypes.Add(0x0B, "E8793A");
+            CardTypes.Add(0X14, "E8794A");
+            CardTypes.Add(0x18, "U7177A");
+            CardTypes.Add(0x19, "U7178A");
+            CardTypes.Add(0x20, "U7179A");
+            CardTypes.Add(0x1E, "E6198A"); //"old" SLU
+            CardTypes.Add(0x32, "E6198B"); //Ez mindig a Slot-0-as cimen van, ez az SLU
+            CardTypes.Add(0x43, "E8782A");
+            CardTypes.Add(0x47, "E8783A");
+
+            var qusb = new QuickUsb(); 
+            qusb.Open(qusbDeviceName);
             qusb.WriteSetting(QuickUsb.Setting.SETTING_WORDWIDE, 0x0000); //0x01
             qusb.WriteSetting(QuickUsb.Setting.SETTING_FIFO_CONFIG, 0x00A2); //0x03
             qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
@@ -56,20 +79,7 @@ namespace Knv.SLU.Discovery
             qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFE); //0x09
             System.Threading.Thread.Sleep(200);
             qusb.WriteSetting(QuickUsb.Setting.SETTING_PORTA, 0xFFFF); //0x09
-
             _qusb = qusb;
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("Ezt rendezze csak kivül a QuickUsb...")]
-        public static List<string> GetAttachedNameOfUnits()
-        {
-            var nameOfRackes = QuickUsb.FindModules().ToList<string>();
-            return nameOfRackes;       
         }
 
         /// <summary>
@@ -169,15 +179,18 @@ namespace Knv.SLU.Discovery
              * 
              */
 
-
             var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint wrlength = (uint)bytes2write.Length;
 
             _qusb.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
             System.Threading.Thread.Sleep(10);
+
             byte[] readBytes = new byte[8];
             uint rdLength = (uint)readBytes.Length;
+            
+            _qusb.ReadData(readBytes, ref rdLength);
+            LogWriteLine($"RdReg Rx-DummyRead: {Tools.ConvertByteArrayToLogString(readBytes)}");
             _qusb.ReadData(readBytes, ref rdLength);
             LogWriteLine($"RdReg Rx: {Tools.ConvertByteArrayToLogString(readBytes)}");
             retval = readBytes[3];

@@ -23,10 +23,8 @@ namespace Knv.SLU.Discovery
         public void Slu_Bypass_Reset()
         {
             byte status = 0;
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-            
-            using (var slu = new SluCtl(qusb))
+           
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
 
@@ -66,10 +64,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void ResistanceTest()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x43 -> E8783A 
@@ -110,10 +105,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void Bypass()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x43 -> E8783A 
@@ -134,10 +126,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void TestPoints()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -158,10 +147,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void DisconnectRelayOnOff()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -176,10 +162,7 @@ namespace Knv.SLU.Discovery
         public void DisconnectControl()
         {
             byte status = 0;
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -223,10 +206,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void OpenAllRealy()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -251,10 +231,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void Reset()
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -281,10 +258,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void CAN3_Termination() //Ez rossz
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 
@@ -305,10 +279,7 @@ namespace Knv.SLU.Discovery
         [Test]
         public void CAN2_Termination() //Ez a jó
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
                 Assert.AreEqual(0x47, type); //0x47 -> E8783A 

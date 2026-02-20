@@ -17,10 +17,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void U7179A_LoadSelect_StepByStep_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -46,10 +43,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void U7179A_LoadSelect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -70,10 +64,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void U7179A_PowerSelect_StepByStep_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -99,10 +90,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void U7179A_PowerSelect_On_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
@@ -123,10 +111,7 @@ namespace Knv.SLU.Discovery
         [TestCase(0, Description = "Slot 0")]
         public void U7179_CurrentSenseSelect_UnitTest(byte slot)
         {
-            var qusb = new QuickUsb();
-            qusb.Open("QUSB-0");
-
-            using (var slu = new SluCtl(qusb))
+            using (var slu = new SluCtl("QUSB-0"))
             {
 
                 int type = slu.ReadRegister(0, slot, 0);
