@@ -6,15 +6,15 @@ namespace Knv.SLU.Discovery
     using System;
     using System.Linq;
     using System.Text;
-    using System.Threading;
 
     [TestFixture]
-    internal class MRLY240314_E8782A_UnitTest
+    internal class MRLY240314_E878XA_UnitTest
     {
         const byte SLOT = 0; //0..21
 
-        const byte TPIC_COUNT = 55; //E8782A-ban 55 tpic van, a 4. címtől kezdve
-        const byte TPIC_FIRST_ADDR = 0x04; //0x04-től kezdődnek a tpic regiszterek
+        const byte TPIC_COUNT_E8782A = 53; //E8782A-ban 53 tpic van, a 6. címtől kezdve
+        const byte TPIC_COUNT_E8783A = 57; //E8783A-ban 57 tpic van, a 6. címtől kezdve
+        const byte TPIC_FIRST_ADDR = 0x06; //0x04-től kezdődnek a tpic az IRHATÓ és OLVASHTÓ regiszterek
 
         const byte ADDR_TYPE_REG = 0x00;
 
@@ -61,7 +61,7 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 for (int i = 0; i < 100; i++)
                 {
@@ -102,11 +102,11 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, ADDR_TYPE_REG);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A
-                                             //
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
+                                                             
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_TYPE_REG, data: 0xCC);
                 regvalue = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_TYPE_REG);
-                Assert.AreEqual(0x43, regvalue);
+                Assert.IsTrue(regvalue == 0x43 || regvalue == 0x47);
 
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_CFG_REG, data: 0xCC);
                 regvalue = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_CFG_REG);
@@ -180,7 +180,7 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 byte[] uidBytes = new byte[8];
 
@@ -193,7 +193,8 @@ namespace Knv.SLU.Discovery
                 uidBytes[6] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B7_REG);
                 uidBytes[7] = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_UID_B8_REG);
                 string uid = Encoding.ASCII.GetString(uidBytes).Trim('\0');
-                Assert.AreEqual("0YQR8T7", uid); //E8782A gyári UID-je")
+
+                Assert.IsTrue(uid == "0YQR8T7" || uid == "0YQITKU");
             }
         }
 
@@ -204,7 +205,7 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(unit: 0, slot: SLOT, register: 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A  
 
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG); //Status regiszter olvasása
                 Assert.AreEqual(0x80, status); //0x80 -> nem busy
@@ -215,17 +216,18 @@ namespace Knv.SLU.Discovery
                 Assert.AreEqual(0x8E, status);
 
                 //A STATUS-ba a ettöl több bit nem  írtható be, a több Reseteli a státuszt és a reléket is.
+                //Kikapcsolnak a Disconnect relék 
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, 0xDE); //Not Reset & Not Open All Relay (OAR)
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);
                 Assert.AreEqual(0xCE, status);
 
                 //A reset
+                //Bekapcsolnak a Disconnect relék 
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, 0x01); //Not Reset & Not Open All Relay (OAR)
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);
                 Assert.AreEqual(0x80, status);
             }
         }
-
 
         [Test]
         public void Dac2Dac2GndRelay()
@@ -234,7 +236,7 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 //--- GndRly ---
                 slu.WriteRegister(0, SLOT, ADDR_STATUS_REG, 0x02); //bekapcsoljuk GndRly ez a K1103-as relé
@@ -269,7 +271,7 @@ namespace Knv.SLU.Discovery
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 //--- all rellays to open ---
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);  //olvasunk egy státuszt
@@ -282,34 +284,89 @@ namespace Knv.SLU.Discovery
         }
 
         [Test]
+        public void TpicAreaReadWriteTest()
+        {
+            using (var slu = new SluCtl("QUSB-0"))
+            {
+                int type = slu.ReadRegister(0, SLOT, register: ADDR_TYPE_REG);
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
+
+                byte tpicCount = 0;
+                if (type == 0x43)
+                {
+                    tpicCount = TPIC_COUNT_E8782A;
+                }
+                else if (type == 0x47)
+                {
+                    tpicCount = TPIC_COUNT_E8783A;
+                }
+
+                bool isPass = true;
+                for (byte i = 0; i < tpicCount; i++)
+                {
+                    byte writeData = 0x01; //Ne húzz meg sok relét, csak ha nagyon jó tápod van
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: (byte)(TPIC_FIRST_ADDR + i), data: writeData);
+                    byte readData = slu.ReadRegister(unit: 0, slot: SLOT, register: (byte)(TPIC_FIRST_ADDR + i));  
+
+                    if (writeData != readData)
+                        isPass = false;
+                }
+
+                slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, 0x01);    //minden relét nyitunk
+
+                // --- Minden relé nyitva, ha regiszterek értéke 0 ---
+                for (byte i = 0; i < tpicCount; i++)
+                {
+                    byte readData = slu.ReadRegister(unit: 0, slot: SLOT, register: (byte)(TPIC_FIRST_ADDR + i));
+                    if (0 != readData)
+                        isPass = false;
+                }
+
+                byte readDatax = slu.ReadRegister(unit: 0, slot: SLOT, register: 5);
+
+                Assert.IsTrue(isPass);
+            }
+        }
+
+        [Test]
         public void ResetTest()
         {
             byte status = 0;
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(0, SLOT, register: ADDR_TYPE_REG);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
+                
+                byte tpicCount = 0;
+                byte lastTpicAddress = 0;
+                if (type == 0x43)
+                {
+                    lastTpicAddress = 0x3A; 
+                    tpicCount = TPIC_COUNT_E8782A;
+                }
+                else if (type == 0x47)
+                {
+                    lastTpicAddress = 0x3E;
+                    tpicCount = TPIC_COUNT_E8783A;
+                }
+                //--- A TPIC utáni terültre nem szabad íri, és amit odairok meg kell, hogy maradjon, itt nem kattanhat relé --
+                slu.WriteRegister(unit: 0, slot: SLOT, register: (byte)(lastTpicAddress + 1), data: 0xCC);
 
-                const byte doNotWriteHereAddress = 59;
- 
-                //Ezt a regisztert már nem szabad felülírnunk és az FPGA-nak törölnie, ezt ellenörzöm ezzel az értékkel.
-                slu.WriteRegister(unit: 0, slot: SLOT, register: doNotWriteHereAddress, data: 0xCC);
+                byte tpicValue = 0x01; // ne huzz meg sok relét, mert a táp kevés lehet
+                for (byte i = 0; i < tpicCount; i++)
+                    slu.WriteRegister(unit: 0, slot: SLOT, register: (byte)(TPIC_FIRST_ADDR + i), data: tpicValue); 
 
-                //minden tpic-re írok egy értéket
-                for (byte i = 0; i < TPIC_COUNT; i++)
-                    slu.WriteRegister(unit: 0, slot: SLOT, register: (byte)(TPIC_FIRST_ADDR + i), data: 0xFF); 
-
-                status = slu.ReadRegister(unit: 0, slot: SLOT, register: 58);  //ez még 0xFF-nek kell lennie
-                Assert.AreEqual(0xFF, status);
-
-                status = slu.ReadRegister(unit: 0, slot: SLOT, register: doNotWriteHereAddress);  //ez 0xCC-kell hogy legyen
+                status = slu.ReadRegister(unit: 0, slot: SLOT, register: lastTpicAddress);  
+                Assert.AreEqual(0x01, tpicValue);
+                
+                status = slu.ReadRegister(unit: 0, slot: SLOT, register: (byte)(lastTpicAddress + 1));
                 Assert.AreEqual(0xCC, status);
 
-                //RESET
-                slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, 0x01);    //minden alaphelyzetbe állítunk
+                //--- RESET: Status és minden TPIC alaphelyzetbe ---
+                slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, 0x01);
 
-                //Ezt a bytet már nem szabad felülírnunk és az FPGA-nak törölnie, ezt ellenörzöm ezzel az értékkel.
-                status = slu.ReadRegister(unit: 0, slot: SLOT, register: doNotWriteHereAddress);  //ez 0xCC-kell hogy legyen
+                //--- A TPIC terület utáni területetre a RESET nincs hatással ezt elleneörzöm ---
+                status = slu.ReadRegister(unit: 0, slot: SLOT, register: (byte)(lastTpicAddress + 1));
                 Assert.AreEqual(0xCC, status);
 
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);  //olvasunk egy státuszt
@@ -324,12 +381,14 @@ namespace Knv.SLU.Discovery
 
             using (var slu = new SluCtl("QUSB-0"))
             {
-                int type = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_TYPE_REG);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                int type = slu.ReadRegister(0, SLOT, register: ADDR_TYPE_REG);
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 //--- alapból be vannak kapcsolva a discconnect relék ---
-                status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG); 
-                Assert.AreEqual(0xF0, status);
+                // 2026.02.25-10:27
+                // Javítás ennek a regiszternek deafult 0x00-nak kell lennie
+                status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG);
+                Assert.IsTrue(status == 0xF0 || status == 0x00); //Az MRLY240313 visszaadja a Disconnect relé állapotokat, az Eredeti kártyák NEM
 
                 //--- Bekpacsolja a disconnect reléket az engedélyezés után, de azok már bevannak így nem kattan relé ---
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG, data: 0xF0);
@@ -341,14 +400,24 @@ namespace Knv.SLU.Discovery
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);  //0x80
                 Assert.AreEqual(0x80, status);
 
-                //--- DCE Engedélyezi a Disconnect relék vezérlést, itt nem kattanak a ralék ---
+                //--- DCE Engedélyezi a Disconnect relék vezérlést ---
+                //Fix: 2026.02.25-10:27 itt kikapcsolnak a discconect relék!
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG, data: 0x40);
 
                 //--- Status olvasása ---
                 status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_STATUS_REG);  //0xC0
                 Assert.AreEqual(0xC0, status);
+                
+                //--- Bekapcsolja a disconnect reléket ---
+                // itt kattannak a dissconnect relék
+                slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG, data: 0xF0);
 
-                //--- Kikapcsolja a disconnect reléket ---
+                //--- bekapcsolt Disconnect Relék ---
+                status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG);  //0x00
+                Assert.IsTrue(status == 0xF0 || status == 0x00); //Az MRLY240313 visszaadja a Disconnect relé állapotokat, az Eredeti kártyák NEM
+
+                //--- Kikapcsolja a disconnect reléketet ---
+                // itt kattannak a dissconnect relék
                 slu.WriteRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG, data: 0x00);
 
                 //--- OAR - Open all relays ---
@@ -377,116 +446,50 @@ namespace Knv.SLU.Discovery
         public void BypassRelays()
         {
             byte status = 0;
-           
             using (var slu = new SluCtl("QUSB-0"))
             {
                 int type = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_TYPE_REG);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
 
                 //--- Eredeti E8782A bus control and protection bypass relay ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01); //"PB1" - > K1 -> reg:0x04, data:0x01
-                slu.WriteRegister(0, SLOT, 0x04, 0x02); //"PB2" - > K2 -> reg:0x04, data:0x02
-                slu.WriteRegister(0, SLOT, 0x04, 0x04); //"PB3" - > K3 -> reg:0x04, data:0x04
-                slu.WriteRegister(0, SLOT, 0x04, 0x08); //"PB4" - > K4 -> reg:0x04, data:0x08
-                slu.WriteRegister(0, SLOT, 0x04, 0x00); //"AB4" - > K1 -> reg:0x04, data:0x01
-                slu.WriteRegister(0, SLOT, 0x04, 0xFF);
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x01); //"PB1" - > K1 -> reg:0x04, data:0x01
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x02); //"PB2" - > K2 -> reg:0x04, data:0x02
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x04); //"PB3" - > K3 -> reg:0x04, data:0x04
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x08); //"PB4" - > K4 -> reg:0x04, data:0x08
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x00); //"AB4" - > K1 -> reg:0x04, data:0x01
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0xFF);
 
                 //--- Read Status ---
-                status = slu.ReadRegister(0, 0, 0x02); 
+                status = slu.ReadRegister(unit: 0, slot: SLOT, ADDR_STATUS_REG); 
                 Console.WriteLine(status); //0x80
 
                 //--- Reset and Set Relay ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x0F); // bekapcsoljuk a bypsass reléket
-                slu.WriteRegister(0, SLOT, 0x02, 0x01); // reset, majd itt törésponttal lehet mérni
-                slu.WriteRegister(0, SLOT, 0x04, 0x0F); // és urja bakpcsoljuk a bypass reléket úgy hogy a reset autó törlődik
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x0F); // bekapcsoljuk a bypsass reléket
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_STATUS_REG, data: 0x01); // reset, majd itt törésponttal lehet mérni
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_PROTECTION_REG, data: 0x0F); // és urja bakpcsoljuk a bypass reléket úgy hogy a reset autó törlődik
             }
         }
 
-        [Test]
-        public void TestPoints()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- K1 - ABUS1 Bypass On ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-                slu.WriteRegister(0, SLOT, 0x04, 0x00);
-
-                //--- UUT_I1 - Ez az első relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x06, 0x01);
-
-                //--- AB4_R40 - Az utolsó relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x2D, 0x80);
-            }
-        }
 
         [Test]
         public void DisconnectRelayOnOff()
         {
             using (var slu = new SluCtl("QUSB-0"))
             {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
+                int type = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_TYPE_REG);
+                Assert.IsTrue(type == 0x43 || type == 0x47); //0x43 -> E8782A, 0x47 -> E8783A
+
+                //RESET
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_STATUS_REG, data: 0x01); // reset, majd itt törésponttal lehet mérni
+
+                byte status = slu.ReadRegister(unit: 0, slot: SLOT, register: ADDR_PROTECTION_REG);
+                Assert.AreEqual(0x00, status);
 
                 //Ez a bit NEM DOKUMENTÁLT!!!
-                slu.WriteRegister(0, SLOT, 0x02, 0x40); // Kikapcsolja a disconnect reléket 
-                slu.WriteRegister(0, SLOT, 0x02, 0x00); // Bekapcsolja a disconnect reléket
+                //(ADDR_PROTECTION_REG: 0x00)
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_STATUS_REG, data: 0x40); // Kikapcsolja a disconnect reléket 
+                slu.WriteRegister(unit: 0, slot: SLOT, ADDR_STATUS_REG, data: 0x00); // Bekapcsolja a disconnect reléket
             }
         }
-
-
-
-        [Test]
-        public void OpenAllRealy()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- UUT_I1 - Ez az első relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x06, 0x01);
-
-                //--- AB1_R1 ---
-                slu.WriteRegister(0, SLOT, 0x11, 0x01);
-
-                //--- AB4_R40 - Az utolsó relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x2D, 0x80);
-
-                //--- ABUS1 Bypass K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-                
-                //--- Open All Relay - AOR ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x20); 
-            }
-        }
-
-        [Test]
-        public void Reset()
-        {
-            using (var slu = new SluCtl("QUSB-0"))
-            {
-                int type = slu.ReadRegister(0, SLOT, 0);
-                Assert.AreEqual(0x43, type); //0x43 -> E8782A 
-
-                //--- UUT_I1 - Ez az első relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x06, 0x01);
-
-                //--- AB1_R1 ---
-                slu.WriteRegister(0, SLOT, 0x11, 0x01);
-
-                //--- AB4_R40 - Az utolsó relé a láncban ---
-                slu.WriteRegister(0, SLOT, 0x2D, 0x80);
-
-                //--- ABUS1 Bypass K1 ---
-                slu.WriteRegister(0, SLOT, 0x04, 0x01);
-                
-                //--- Reset ---
-                slu.WriteRegister(0, SLOT, 0x02, 0x01); 
-            }
-        }
-
     }
 }

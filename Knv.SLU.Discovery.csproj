@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\Tools.cs" />
-    <Compile Include="MRLY240314_E8782A_UnitTest.cs" />
+    <Compile Include="MRLY240314_E878XA_UnitTest.cs" />
     <Compile Include="E8783A_UnitTest.cs" />
     <Compile Include="N9377A_UnitTest.cs" />
     <Compile Include="U7179A_UnitTest.cs" />

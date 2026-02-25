@@ -28,7 +28,7 @@ namespace Knv.SLU.Discovery
             {
                 int type = slu.ReadRegister(0, SLOT, 0);
 
-                Assert.AreEqual(0x47, type); //0x43 -> E8783A 
+                Assert.AreEqual(0x47, type); //0x47 -> E8783A 
 
                 //--- Eredeti E8783A bus control and protection bypass relay ---
                 slu.WriteRegister(0, SLOT, 0x04, 0x01); //"PB1" - > K1 -> reg:0x04, data:0x01
