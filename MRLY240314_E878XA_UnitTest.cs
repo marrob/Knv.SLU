@@ -4,13 +4,15 @@ namespace Knv.SLU.Discovery
     using BitwiseSystems;
     using NUnit.Framework;
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
+    using System.Threading;
 
     [TestFixture]
     internal class MRLY240314_E878XA_UnitTest
     {
-        const byte SLOT = 14; //0..21
+        const byte SLOT = 0; //0..21
 
         const byte TPIC_COUNT_E8782A = 53; //E8782A-ban 53 tpic van, a 6. címtől kezdve
         const byte TPIC_COUNT_E8783A = 57; //E8783A-ban 57 tpic van, a 6. címtől kezdve
@@ -63,6 +65,49 @@ namespace Knv.SLU.Discovery
                     Assert.AreEqual(0xA8, b8);
                 }
             }
+        }
+
+        [Test]
+        public void Debounce_Speed_UnitTest()
+        {
+            using (var slu = new SluCtl("QUSB-0"))
+            {
+                int type = slu.ReadRegister(0, SLOT, SluCtl.ADDR_TYPE_REG);
+                Assert.IsTrue(type == 0x43); //0x43 -> E8782A, csak a E8782A-val müködik
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    //--- ON ---
+                    // Inst1 -> Abus1
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x0E, data: 0x01);
+                    // Row1 -> Abus1
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x11, data: 0x01);
+                    // Abus1 Bypass
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x04, data: 0x01);
+                    DelayNanoseconds(500_000); //500us
+                    //--- OFF ---
+                    // Inst1 -> Abus1
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x0E, data: 0x00);
+                    // Row1 -> Abus1
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x11, data: 0x00);
+                    // Abus1 Bypass
+                    slu.WriteRegister(slu: 0, slot: SLOT, register: 0x04, data: 0x00);
+                    DelayNanoseconds(500_000); //500us
+                }
+            }
+        }
+
+        static void DelayNanoseconds(long nanoseconds)
+        {
+            if (!Stopwatch.IsHighResolution)
+                throw new NotSupportedException("Nincs nagy felbontású időzítő ezen a rendszeren.");
+
+            // Stopwatch.Frequency = tick / másodperc
+            double ticksPerNanosecond = (double)Stopwatch.Frequency / 1_000_000_000.0;
+            long targetTicks = (long)(nanoseconds * ticksPerNanosecond);
+
+            long start = Stopwatch.GetTimestamp();
+            while (Stopwatch.GetTimestamp() - start < targetTicks) { }
         }
 
 
