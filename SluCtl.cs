@@ -22,23 +22,49 @@
 
 namespace Knv.SLU.Discovery
 {
+    //C:\Program Files (x86)\Bitwise Systems\QuickUsb\Library\Assembly
+    using BitwiseSystems;
+    using Common;
+    using NUnit.Framework;
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    //C:\Program Files (x86)\Bitwise Systems\QuickUsb\Library\Assembly
-    using BitwiseSystems;
-    using Common;
 
     public class SluCtl : IDisposable
     {
+        public const byte ADDR_TYPE_REG = 0x00;
+        public const byte ADDR_CFG_REG = 0x01;
+        public const byte ADDR_STATUS_REG = 0x02;
+        public const byte ADDR_READONLY_1_REG = 0x03;
+        public const byte ADDR_PROTECTION_REG = 0x04;
+        public const byte ADDR_READONLY_2_REG = 0x05;
+
+        public const byte ADDR_ADC_RESULT_B1_REG = 0xE6;
+        public const byte ADDR_ADC_RESULT_B2_REG = 0xE7;
+        public const byte ADDR_ADC_RESULT_B3_REG = 0xE8;
+        public const byte ADDR_ADC_RESULT_B4_REG = 0xE9;
+        public const byte ADDR_ADC_RESULT_B5_REG = 0xEA;
+        public const byte ADDR_ADC_RESULT_B6_REG = 0xEB;
+        public const byte ADDR_ADC_RESULT_B7_REG = 0xEC;
+        public const byte ADDR_ADC_RESULT_B8_REG = 0xED;
+
+        public const byte ADDR_UID_B1_REG = 0xF3;
+        public const byte ADDR_UID_B2_REG = 0xF4;
+        public const byte ADDR_UID_B3_REG = 0xF5;
+        public const byte ADDR_UID_B4_REG = 0xF6;
+        public const byte ADDR_UID_B5_REG = 0xF7;
+        public const byte ADDR_UID_B6_REG = 0xF8;
+        public const byte ADDR_UID_B7_REG = 0xF9;
+        public const byte ADDR_UID_B8_REG = 0xFA;
+
+        public const byte ADDR_VERSION_B1_REG = 0xFB;
+        public const byte ADDR_VERSION_B2_REG = 0xFC;
+        public const byte ADDR_VERSION_B3_REG = 0xFD;
+        public const byte ADDR_VERSION_B4_REG = 0xFE;
+        public const byte ADDR_INV_TYPE_REG = 0xFF;
 
         public const int MAX_CARD_COUNT_IN_RACK = 21; //+1 SLU itself
-
-        /// <summary>
-        /// Type of Card example: 0x32 -> E6198B This the SLU
-        /// </summary>
-        public const byte REG_CARD_TYPE = 0x00;
 
         /// <summary>
         /// Az SLU unit nak is van fixture id-ja, ez az SLU cime pl SLU0, SLU1...stb.
@@ -91,7 +117,7 @@ namespace Knv.SLU.Discovery
         /// <returns> E6198B </returns>
         public string GetCardModel(byte unit, byte slot)
         {
-            var code = ReadRegister(unit, slot, REG_CARD_TYPE);
+            var code = ReadRegister(unit, slot, ADDR_TYPE_REG);
             string type = string.Empty;
             if (!CardTypes.TryGetValue(code, out type))
                 type = "UNKNOWN";
@@ -99,7 +125,7 @@ namespace Knv.SLU.Discovery
         }
 
         /// <summary>
-        /// Card Type is valu of REG_CARD_TYPE register
+        /// Card Type is valu of ADDR_TYPE_REG register
         /// example: 0x01
         /// </summary>
         /// <param name="unit">SLU0:0 SLU1:1</param>
@@ -107,7 +133,7 @@ namespace Knv.SLU.Discovery
         /// <returns> 0x01 </returns>
         public byte GetCardType(byte unit, byte slot)
         {
-            return ReadRegister(unit, slot, REG_CARD_TYPE);
+            return ReadRegister(unit, slot, ADDR_TYPE_REG);
         }
 
         /// <summary>
@@ -118,18 +144,18 @@ namespace Knv.SLU.Discovery
         /// <returns>It is true if slot is not empty.</returns>
         public bool CardIsPresent(byte unit, byte slot)
         {
-            var code = ReadRegister(unit, slot, REG_CARD_TYPE);
+            var code = ReadRegister(unit, slot, ADDR_TYPE_REG);
             return code != 0xFF;
         }
 
         /// <summary>
         /// Write a card Register
         /// </summary>
-        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slu">SLU0:0 SLU1:1</param>
         /// <param name="slot">Indes of slots 1..21. The Slot 0 is the SLU itself. </param>
         /// <param name="register">Register Address of Card</param>
         /// <param name="data">Write Value of the register</param>
-        public void WriteRegister(byte unit, byte slot, byte register, byte data)
+        public void WriteRegister(byte slu, byte slot, byte register, byte data)
         {
             /*
              * Example:
@@ -152,7 +178,7 @@ namespace Knv.SLU.Discovery
              * 
              */
 
-            var bytes2write = new byte[] { 0x0A, (byte)((unit << 5) | slot), register, data, 0xFF, 0xFF, 0xFF, 0xFF };
+            var bytes2write = new byte[] { 0x0A, (byte)((slu << 5) | slot), register, data, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"WrReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint length = (uint)bytes2write.Length;
             _qusb.WriteDataEx(bytes2write, ref length, QuickUsb.DataFlags.None);
@@ -161,11 +187,11 @@ namespace Knv.SLU.Discovery
         /// <summary>
         /// Read a Register
         /// </summary>
-        /// <param name="unit">SLU0:0 SLU1:1</param>
+        /// <param name="slu">SLU0:0 SLU1:1</param>
         /// <param name="slot">Indes of slots 1..21. The Slot 0 is the SLU itself.</param>
         /// <param name="register">Register Address of the Card</param>
         /// <returns>Value of the register</returns>
-        public byte ReadRegister(byte unit, byte slot, byte register)
+        public byte ReadRegister(byte slu, byte slot, byte register)
         {
             byte retval = 0;
             /* Example
@@ -174,12 +200,9 @@ namespace Knv.SLU.Discovery
              * 0B 35 00 FF FF FF FF FF
              * FF 00 00 43 43 43 43 43\
              * 
-             * Szia Robi! Mizu? kutyagumi
-             * Ne légy troll!!!!!!!!!!!!!!!!!! Te Fasz
-             * 
              */
 
-            var bytes2write = new byte[] { 0x0B, (byte)((unit << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            var bytes2write = new byte[] { 0x0B, (byte)((slu << 5) | slot), register, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             LogWriteLine($"RdReg Tx: {Tools.ConvertByteArrayToLogString(bytes2write)}");
             uint wrlength = (uint)bytes2write.Length;
 
@@ -190,10 +213,8 @@ namespace Knv.SLU.Discovery
             uint rdLength = (uint)readBytes.Length;
             
             _qusb.ReadData(readBytes, ref rdLength);
-            LogWriteLine($"RdReg Rx-DummyRead: {Tools.ConvertByteArrayToLogString(readBytes)}");
-            _qusb.ReadData(readBytes, ref rdLength);
             LogWriteLine($"RdReg Rx: {Tools.ConvertByteArrayToLogString(readBytes)}");
-            retval = readBytes[3];
+            retval = readBytes[7];
             return retval;
         }
 
@@ -220,6 +241,46 @@ namespace Knv.SLU.Discovery
             return retval;
         }
 
+        public bool IsMRLY240314Card(byte unit, byte slot)
+        {
+            byte type = ReadRegister(unit, slot, register: ADDR_TYPE_REG);
+            byte invert_type = (byte)~ReadRegister(unit, slot, register: ADDR_INV_TYPE_REG);
+
+            if (type == invert_type)
+                return true;
+            else
+                return false;
+        }
+
+        public string GetUid(byte unit, byte slot) 
+        {
+            byte[] uidBytes = new byte[8];
+            uidBytes[0] = ReadRegister(unit, slot, register: ADDR_UID_B1_REG);
+            uidBytes[1] = ReadRegister(unit, slot, register: ADDR_UID_B2_REG);
+            uidBytes[2] = ReadRegister(unit, slot, register: ADDR_UID_B3_REG);
+            uidBytes[3] = ReadRegister(unit, slot, register: ADDR_UID_B4_REG);
+            uidBytes[4] = ReadRegister(unit, slot, register: ADDR_UID_B5_REG);
+            uidBytes[5] = ReadRegister(unit, slot, register: ADDR_UID_B6_REG);
+            uidBytes[6] = ReadRegister(unit, slot, register: ADDR_UID_B7_REG);
+            uidBytes[7] = ReadRegister(unit, slot, register: ADDR_UID_B8_REG);
+            string uid = Encoding.ASCII.GetString(uidBytes).Trim('\0');
+            return uid;
+        }
+
+        public double MeasureResistance(byte unit, byte slot)
+        {
+            byte[] bytes = new byte[8];
+            bytes[0] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B1_REG);
+            bytes[1] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B2_REG);
+            bytes[2] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B3_REG);
+            bytes[3] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B4_REG);
+            bytes[4] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B5_REG);
+            bytes[5] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B6_REG);
+            bytes[6] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B7_REG);
+            bytes[7] = ReadRegister(unit, slot, register: ADDR_ADC_RESULT_B8_REG);
+            double ohms = BitConverter.ToDouble(bytes, startIndex: 0);
+            return ohms;
+        }
 
 
         #region Logging
