@@ -12,7 +12,7 @@ namespace Knv.SLU.Discovery
     [TestFixture]
     internal class MRLY240314_E878XA_UnitTest
     {
-        const byte SLOT = 0; //0..21
+        const byte SLOT = 21; //0..21
 
         const byte TPIC_COUNT_E8782A = 53; //E8782A-ban 53 tpic van, a 6. címtől kezdve
         const byte TPIC_COUNT_E8783A = 57; //E8783A-ban 57 tpic van, a 6. címtől kezdve
@@ -66,6 +66,7 @@ namespace Knv.SLU.Discovery
                 }
             }
         }
+
 
         [Test]
         public void Debounce_Speed_UnitTest()

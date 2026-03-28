@@ -207,7 +207,7 @@ namespace Knv.SLU.Discovery
             uint wrlength = (uint)bytes2write.Length;
 
             _qusb.WriteDataEx(bytes2write, ref wrlength, QuickUsb.DataFlags.None);
-            System.Threading.Thread.Sleep(10);
+            //System.Threading.Thread.Sleep(10); //2026.03.28 13:58 removed
 
             byte[] readBytes = new byte[8];
             uint rdLength = (uint)readBytes.Length;
